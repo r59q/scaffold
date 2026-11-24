@@ -37,10 +37,10 @@ jobs:
 
           if ! curl --fail --silent --show-error --max-time 30 \
             --header "X-Vault-Token: $token" \
-            "${VAULT_ADDR%/}/v1/secret/data/scaffold" |
+            "${VAULT_ADDR%/}/v1/kv/data/scaffold" |
             jq -e '.data.data | objects' > /dev/null; then
-            echo "::error::Vault login succeeded, but reading secret/scaffold failed."
+            echo "::error::Vault login succeeded, but reading kv/scaffold failed."
             exit 1
           fi
 
-          echo "Vault test passed. Logged in and read secret/scaffold."
+          echo "Vault test passed. Logged in and read kv/scaffold."
