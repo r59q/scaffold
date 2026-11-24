@@ -1,0 +1,46 @@
+name: Test Vault access
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  test-vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Log in and read scaffold
+        shell: bash
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_USERNAME: ${{ secrets.VAULT_USERNAME }}
+          VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+        run: |
+          if [[ -z "$VAULT_ADDR" || -z "$VAULT_USERNAME" || -z "$VAULT_PASSWORD" ]]; then
+            echo "::error::Vault test failed because a required repository secret is missing."
+            exit 1
+          fi
+
+          username=$(jq -nr 'env.VAULT_USERNAME | @uri')
+          if ! token=$(
+            jq -nc '{password: env.VAULT_PASSWORD}' |
+              curl --fail --silent --show-error --max-time 30 \
+                --header 'Content-Type: application/json' --data-binary @- \
+                "${VAULT_ADDR%/}/v1/auth/userpass/login/$username" |
+              jq -er '.auth.client_token | strings | select(length > 0)'
+          ); then
+            echo "::error::Vault test failed during userpass login."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+
+          if ! curl --fail --silent --show-error --max-time 30 \
+            --header "X-Vault-Token: $token" \
+            "${VAULT_ADDR%/}/v1/secret/data/scaffold" |
+            jq -e '.data.data | objects' > /dev/null; then
+            echo "::error::Vault login succeeded, but reading secret/scaffold failed."
+            exit 1
+          fi
+
+          echo "Vault test passed. Logged in and read secret/scaffold."
