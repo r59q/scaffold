@@ -1,0 +1,29 @@
+{
+  "name": "@scaffold/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test test/streaming.test.mjs"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "~5.9.3"
+  }
+}
