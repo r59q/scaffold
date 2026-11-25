@@ -41,5 +41,37 @@ JSON text message to each currently connected client. Clients receive additions
 in call order, starting from when they connect. The first message above is
 `{"id":"intro","html":"<p>Hello</p>"}`.
 
-The browser appends a block when it sees a new ID. A later message with the
-same ID replaces that block's HTML in its original position.
+## TypeScript browser renderer
+
+Run these commands from the `browser/` directory with Node.js 22 or newer.
+
+```sh
+npm ci
+npm run build
+npm run typecheck
+npm test
+```
+
+The build emits a browser ES module and TypeScript declarations to `browser/dist/`.
+Import `bindBlockStream` from `@scaffold/browser` in a bundled app or from the
+built `index.js` in a browser module. Pass a container and an application-owned
+WebSocket before the server starts sending messages.
+
+```ts
+import { bindBlockStream } from "@scaffold/browser";
+
+const container = document.querySelector<HTMLElement>("#blocks")!;
+const socket = new WebSocket("ws://127.0.0.1:8080");
+const unbind = bindBlockStream(container, socket, (element) => {
+  element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+});
+```
+
+Each new ID appends a `<div data-block-id="…">` containing the server-rendered
+HTML. Later messages for that ID update the wrapper's contents in place. The
+optional callback runs after the wrapper is inserted and can start an animation
+while subsequent messages continue to render.
+
+Use a container dedicated to the stream and connect to a server you trust to
+provide HTML for the page. Call `unbind()` to stop consuming messages. The
+application owns the WebSocket connection and the lifetime of the rendered DOM.
