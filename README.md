@@ -43,10 +43,13 @@ Dotted keys and a nested `prod` object are both supported. The private key must
 work non-interactively, and the `wg-quick` config must route `prod.wg_ip` over
 the tunnel.
 
-Set the `PROD_SSH_KNOWN_HOSTS` repository variable to the verified OpenSSH
-`known_hosts` entry for `prod.hostname`. The workflow uses that name to verify
-the server key and connects to `prod.wg_ip` through WireGuard. The remote SSH
-user needs Docker access and a Compose version that supports `up --wait`.
+The shared Vault KV v2 secret `kv/shared` must supply `known_hosts` as a nonblank
+string in OpenSSH `known_hosts` format, with one entry per line. Include a
+verified host key entry for `prod.hostname`. The workflow's Vault identity
+must have `read` access to `kv/data/shared`. The workflow verifies the server
+key against `prod.hostname` and connects to `prod.wg_ip` through WireGuard. The
+remote SSH user needs Docker access and a Compose version that supports
+`up --wait`.
 
 The workflow builds the selected revision on the server under
 `$HOME/scaffold-demo` and updates `current` after the service passes its HTTP
