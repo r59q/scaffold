@@ -13,7 +13,7 @@ die() {
 
 umask 077
 credentials=$(mktemp -d "${RUNNER_TEMP:-/tmp}/scaffold-demo.XXXXXXXX")
-wg_interface=scaffold-ci
+wg_interface='scaffold-ci'
 wg_config="$credentials/$wg_interface.conf"
 tunnel_up=false
 
