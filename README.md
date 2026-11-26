@@ -28,6 +28,32 @@ To smoke-check the demo, open the browser's Network panel, then reload the page.
    (revised)** without another fade. The socket shows a second `intro` message,
    and the page still contains exactly two blocks with the second below the first.
 
+### Run with Docker Compose
+
+From the repository root, run `docker compose up --build --wait` and open
+[http://127.0.0.1:8080/](http://127.0.0.1:8080/). Stop it with `docker compose down`.
+
+### Deploy to production
+
+Run **Deploy demo** from the default branch in GitHub Actions. It uses the same
+`VAULT_ADDR`, `VAULT_USERNAME`, and `VAULT_PASSWORD` repository secrets as the
+Vault test. The `kv/scaffold` secret must supply `prod.hostname`,
+`prod.ssh_username`, `prod.ssh_private_key`, `prod.wg_ip`, and `prod.wg_config`.
+Dotted keys and a nested `prod` object are both supported. The private key must
+work non-interactively, and the `wg-quick` config must route `prod.wg_ip` over
+the tunnel.
+
+Set the `PROD_SSH_KNOWN_HOSTS` repository variable to the verified OpenSSH
+`known_hosts` entry for `prod.hostname`. The workflow uses that name to verify
+the server key and connects to `prod.wg_ip` through WireGuard. The remote SSH
+user needs Docker access and a Compose version that supports `up --wait`.
+
+The workflow builds the selected revision on the server under
+`$HOME/scaffold-demo` and updates `current` after the service passes its HTTP
+health check. The previous release files remain available. To verify the demo,
+check `docker compose ps` from `$HOME/scaffold-demo/current`, forward the
+server's loopback port 8080 over SSH, and run the browser smoke check above.
+
 ## TypeScript backend
 
 The backend streams server-rendered HTML blocks over WebSocket. Run these
