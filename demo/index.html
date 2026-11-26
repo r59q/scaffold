@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scaffold progressive loading demo</title>
+  <style>
+    body {
+      background: #f3f5fa;
+      color: #17213b;
+      font: 1rem/1.5 system-ui, sans-serif;
+      margin: 0;
+    }
+
+    main {
+      margin: 0 auto;
+      max-width: 40rem;
+      padding: 3rem 1rem;
+    }
+
+    #blocks {
+      display: grid;
+      gap: 1rem;
+    }
+
+    #blocks > div {
+      background: white;
+      border: 1px solid #cbd3e3;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+
+    h2, p {
+      margin: 0;
+    }
+
+    h2 + p {
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Scaffold progressive loading</h1>
+    <div id="blocks" aria-live="polite"></div>
+  </main>
+  <script type="module">
+    import { bindBlockStream, tweenEnter } from "/scaffold/index.js";
+
+    const url = new URL("/blocks", location.href);
+    url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
+    const socket = new WebSocket(url);
+    bindBlockStream(document.querySelector("#blocks"), socket, tweenEnter);
+  </script>
+</body>
+</html>
