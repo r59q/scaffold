@@ -24,6 +24,7 @@ const server = createServer((request, response) => {
 });
 
 const interval = 2000;
+const streams = new WebSocketServer({ noServer: true });
 
 server.on("upgrade", (request, socket, head) => {
   if (request.url !== "/blocks") {
@@ -31,11 +32,8 @@ server.on("upgrade", (request, socket, head) => {
     return;
   }
 
-  // The builder broadcasts to its server's clients. Give each visit its own
-  // client set so opening another tab starts a fresh sequence for that tab.
-  const stream = new WebSocketServer({ noServer: true });
-  stream.handleUpgrade(request, socket, head, (client) => {
-    const builder = createBlockBuilder(stream);
+  streams.handleUpgrade(request, socket, head, (client) => {
+    const builder = createBlockBuilder(client);
 
     builder.add("intro", () => `
       <h2>First block</h2>
@@ -60,7 +58,6 @@ server.on("upgrade", (request, socket, head) => {
     client.once("close", () => {
       clearTimeout(addDetails);
       clearTimeout(reviseIntro);
-      stream.close();
     });
   });
 });

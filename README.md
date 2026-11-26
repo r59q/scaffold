@@ -44,7 +44,7 @@ The build emits JavaScript and TypeScript declarations to `backend/dist/`.
 The test builds the package and opens a WebSocket connection on a local port.
 
 In your server code, import `createBlockBuilder` from `@scaffold/backend` and
-pass it a `ws` WebSocket server with its default client tracking enabled. The
+pass it a connected `ws` WebSocket to start a page stream for one client. The
 application owns the server and its lifecycle.
 
 ```ts
@@ -52,9 +52,8 @@ import { createBlockBuilder } from "@scaffold/backend";
 import { WebSocketServer } from "ws";
 
 const server = new WebSocketServer({ host: "127.0.0.1", port: 8080 });
-const builder = createBlockBuilder(server);
-
-server.once("connection", () => {
+server.on("connection", (socket) => {
+  const builder = createBlockBuilder(socket);
   builder.add("intro", () => "<p>Hello</p>");
 
   setTimeout(() => {
@@ -65,9 +64,10 @@ server.once("connection", () => {
 ```
 
 Each call to `add` renders the block synchronously on the server and sends one
-JSON text message to each currently connected client. Clients receive additions
-in call order, starting from when they connect. The first message above is
-`{"id":"intro","html":"<p>Hello</p>"}`.
+JSON text message to the open socket. Blocks arrive in call order. The first
+message above is `{"id":"intro","html":"<p>Hello</p>"}`. To broadcast the same
+blocks to all connected clients, pass the `WebSocketServer` to the builder and
+keep its default client tracking enabled.
 
 ## TypeScript browser renderer
 
@@ -97,8 +97,13 @@ Each new ID appends a `<div data-block-id="…">` containing the server-rendered
 HTML. Later messages for that ID update the wrapper's contents in place. The
 optional callback runs after the wrapper is inserted. `tweenEnter(element)`
 fades a mounted element from transparent to its usual opacity over 200 ms.
-It also works on elements mounted outside the renderer. `npm test` checks the
-fade and overlapping insertions without a backend connection.
+It also works on elements mounted outside the renderer and respects the
+browser's reduced-motion preference.
+
+Use `tween(window, options)` to animate other numeric values. Supply `from`,
+`to`, `durationMs`, and an `update` callback. The tween interpolates linearly
+unless you supply an `easing` function, and calls `onComplete` when it reaches
+`to`. Call the returned function to cancel pending updates.
 
 Use a container dedicated to the stream and connect to a server you trust to
 provide HTML for the page. Call `unbind()` to stop consuming messages. The
