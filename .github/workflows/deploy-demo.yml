@@ -1,0 +1,34 @@
+name: Deploy demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-demo-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install WireGuard tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wireguard-tools
+
+      - name: Deploy over WireGuard
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_USERNAME: ${{ secrets.VAULT_USERNAME }}
+          VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+          PROD_SSH_KNOWN_HOSTS: ${{ vars.PROD_SSH_KNOWN_HOSTS }}
+        run: bash .github/scripts/deploy-demo.sh
