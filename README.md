@@ -44,7 +44,7 @@ The build emits JavaScript and TypeScript declarations to `backend/dist/`.
 The test builds the package and opens a WebSocket connection on a local port.
 
 In your server code, import `createBlockBuilder` from `@scaffold/backend` and
-pass it a `ws` WebSocket server with its default client tracking enabled. The
+pass it a connected `ws` WebSocket to start a page stream for one client. The
 application owns the server and its lifecycle.
 
 ```ts
@@ -52,9 +52,8 @@ import { createBlockBuilder } from "@scaffold/backend";
 import { WebSocketServer } from "ws";
 
 const server = new WebSocketServer({ host: "127.0.0.1", port: 8080 });
-const builder = createBlockBuilder(server);
-
-server.once("connection", () => {
+server.on("connection", (socket) => {
+  const builder = createBlockBuilder(socket);
   builder.add("intro", () => "<p>Hello</p>");
 
   setTimeout(() => {
@@ -65,9 +64,10 @@ server.once("connection", () => {
 ```
 
 Each call to `add` renders the block synchronously on the server and sends one
-JSON text message to each currently connected client. Clients receive additions
-in call order, starting from when they connect. The first message above is
-`{"id":"intro","html":"<p>Hello</p>"}`.
+JSON text message to the open socket. Blocks arrive in call order. The first
+message above is `{"id":"intro","html":"<p>Hello</p>"}`. To broadcast the same
+blocks to all connected clients, pass the `WebSocketServer` to the builder and
+keep its default client tracking enabled.
 
 ## TypeScript browser renderer
 
