@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --test test/rendering.test.mjs"
+    "test": "npm run build && node --test"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",

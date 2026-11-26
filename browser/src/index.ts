@@ -1,3 +1,5 @@
+export { tweenEnter } from "./tween.js";
+
 export type EnterAnimation = (element: HTMLElement) => void;
 
 export function bindBlockStream(
