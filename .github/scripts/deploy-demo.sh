@@ -9,7 +9,6 @@ die() {
 : "${VAULT_ADDR:?Set the VAULT_ADDR repository secret}"
 : "${VAULT_USERNAME:?Set the VAULT_USERNAME repository secret}"
 : "${VAULT_PASSWORD:?Set the VAULT_PASSWORD repository secret}"
-: "${PROD_SSH_KNOWN_HOSTS:?Set the PROD_SSH_KNOWN_HOSTS repository variable}"
 
 umask 077
 credentials=$(mktemp -d "${RUNNER_TEMP:-/tmp}/scaffold-demo.XXXXXXXX")
@@ -33,7 +32,7 @@ if ! token=$(
     curl --fail --silent --show-error --max-time 30 \
       --header 'Content-Type: application/json' --data-binary @- \
       "${VAULT_ADDR%/}/v1/auth/userpass/login/$username" |
-    jq -er '.auth.client_token | strings | select(length > 0)'
+    jq -er '.auth.client_token | strings | select(length > 0)' 2>/dev/null
 ); then
   die 'Vault userpass login failed.'
 fi
@@ -44,15 +43,28 @@ if ! scaffold=$(
   printf 'X-Vault-Token: %s\n' "$token" |
     curl --fail --silent --show-error --max-time 30 --header @- \
       "${VAULT_ADDR%/}/v1/kv/data/scaffold" |
-    jq -ce '.data.data | objects'
+    jq -ce '.data.data | objects' 2>/dev/null
 ); then
   die 'Could not read kv/scaffold from Vault.'
 fi
+if ! shared=$(
+  printf 'X-Vault-Token: %s\n' "$token" |
+    curl --fail --silent --max-time 30 --header @- \
+      "${VAULT_ADDR%/}/v1/kv/data/shared"
+); then
+  die 'Could not read kv/data/shared from Vault. Check Vault connectivity and grant the workflow identity read access to kv/data/shared.'
+fi
 unset token
+
+if ! jq -er '.data.data.known_hosts | strings | select(test("\\S")) | rtrimstr("\n")' \
+  > "$credentials/known_hosts" 2>/dev/null <<< "$shared"; then
+  die 'Vault field known_hosts in kv/data/shared must be a nonblank OpenSSH known_hosts string.'
+fi
+unset shared
 
 prod_field() {
   jq -er --arg key "$1" \
-    '(.["prod." + $key] // .prod[$key]) | strings | rtrimstr("\n") | select(length > 0)' <<< "$scaffold" ||
+    '(.["prod." + $key] // .prod[$key]) | strings | rtrimstr("\n") | select(length > 0)' 2>/dev/null <<< "$scaffold" ||
     die "Vault field prod.$1 must be a nonempty string."
 }
 
@@ -69,9 +81,8 @@ node -e 'process.exit(require("node:net").isIP(process.argv[1]) ? 0 : 1)' "$wg_i
   die 'prod.wg_ip must be a WireGuard IP address.'
 printf '::add-mask::%s\n' "$hostname" "$ssh_username" "$wg_ip"
 
-printf '%s\n' "$PROD_SSH_KNOWN_HOSTS" > "$credentials/known_hosts"
-ssh-keygen -F "$hostname" -f "$credentials/known_hosts" > /dev/null ||
-  die 'PROD_SSH_KNOWN_HOSTS must contain a host key for prod.hostname.'
+ssh-keygen -F "$hostname" -f "$credentials/known_hosts" > /dev/null 2>&1 ||
+  die 'Vault field known_hosts in kv/data/shared must contain an OpenSSH host key entry for prod.hostname.'
 
 sudo wg-quick up "$wg_config" > /dev/null 2>&1 || die 'Could not bring up the WireGuard tunnel.'
 tunnel_up=true

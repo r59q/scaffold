@@ -30,5 +30,4 @@ jobs:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_USERNAME: ${{ secrets.VAULT_USERNAME }}
           VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
-          PROD_SSH_KNOWN_HOSTS: ${{ vars.PROD_SSH_KNOWN_HOSTS }}
         run: bash .github/scripts/deploy-demo.sh
