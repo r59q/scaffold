@@ -1,5 +1,33 @@
 # scaffold
 
+## Progressive loading demo
+
+From the repository root, use Node.js 22 or newer and run:
+
+```sh
+npm --prefix backend ci
+npm --prefix backend run build
+npm --prefix browser ci
+npm --prefix browser run build
+npm --prefix demo ci
+npm --prefix demo start
+```
+
+Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) in a browser. The demo
+serves the built browser modules and streams HTML from the backend builder over
+a WebSocket. Each visit starts a fresh sequence.
+
+To smoke-check the demo, open the browser's Network panel, then reload the page.
+
+1. **First block** fades in on its own. In the Network panel, the `/blocks`
+   WebSocket shows an `intro` message.
+2. About two seconds later, **Second block** fades in below it. The same socket
+   shows a `details` message, and the page stays open without another document
+   request.
+3. About two seconds after that, the first heading changes to **First block
+   (revised)** without another fade. The socket shows a second `intro` message,
+   and the page still contains exactly two blocks with the second below the first.
+
 ## TypeScript backend
 
 The backend streams server-rendered HTML blocks over WebSocket. Run these
