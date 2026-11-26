@@ -62,6 +62,7 @@ server.on("upgrade", (request, socket, head) => {
   });
 });
 
-server.listen(8080, "127.0.0.1", () => {
-  console.log("Scaffold demo running at http://127.0.0.1:8080/");
+const host = process.env.HOST ?? "127.0.0.1";
+server.listen(8080, host, () => {
+  console.log(`Scaffold demo listening on ${host}:8080`);
 });

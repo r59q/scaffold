@@ -1,0 +1,12 @@
+**
+!backend/package*.json
+!backend/src/
+!backend/src/**
+!backend/tsconfig.json
+!browser/package*.json
+!browser/src/
+!browser/src/**
+!browser/tsconfig.json
+!demo/index.html
+!demo/package*.json
+!demo/server.mjs
