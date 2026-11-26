@@ -97,8 +97,13 @@ Each new ID appends a `<div data-block-id="…">` containing the server-rendered
 HTML. Later messages for that ID update the wrapper's contents in place. The
 optional callback runs after the wrapper is inserted. `tweenEnter(element)`
 fades a mounted element from transparent to its usual opacity over 200 ms.
-It also works on elements mounted outside the renderer. `npm test` checks the
-fade and overlapping insertions without a backend connection.
+It also works on elements mounted outside the renderer and respects the
+browser's reduced-motion preference.
+
+Use `tween(window, options)` to animate other numeric values. Supply `from`,
+`to`, `durationMs`, and an `update` callback. The tween interpolates linearly
+unless you supply an `easing` function, and calls `onComplete` when it reaches
+`to`. Call the returned function to cancel pending updates.
 
 Use a container dedicated to the stream and connect to a server you trust to
 provide HTML for the page. Call `unbind()` to stop consuming messages. The

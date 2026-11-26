@@ -1,4 +1,4 @@
-export { tweenEnter } from "./tween.js";
+export { tween, tweenEnter, type TweenOptions } from "./tween.js";
 
 export type EnterAnimation = (element: HTMLElement) => void;
 
