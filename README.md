@@ -58,19 +58,19 @@ built `index.js` in a browser module. Pass a container and an application-owned
 WebSocket before the server starts sending messages.
 
 ```ts
-import { bindBlockStream } from "@scaffold/browser";
+import { bindBlockStream, tweenEnter } from "@scaffold/browser";
 
 const container = document.querySelector<HTMLElement>("#blocks")!;
 const socket = new WebSocket("ws://127.0.0.1:8080");
-const unbind = bindBlockStream(container, socket, (element) => {
-  element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
-});
+const unbind = bindBlockStream(container, socket, tweenEnter);
 ```
 
 Each new ID appends a `<div data-block-id="…">` containing the server-rendered
 HTML. Later messages for that ID update the wrapper's contents in place. The
-optional callback runs after the wrapper is inserted and can start an animation
-while subsequent messages continue to render.
+optional callback runs after the wrapper is inserted. `tweenEnter(element)`
+fades a mounted element from transparent to its usual opacity over 200 ms.
+It also works on elements mounted outside the renderer. `npm test` checks the
+fade and overlapping insertions without a backend connection.
 
 Use a container dedicated to the stream and connect to a server you trust to
 provide HTML for the page. Call `unbind()` to stop consuming messages. The
