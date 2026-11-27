@@ -34,8 +34,8 @@ export function surveyChart(stations, selected) {
       <title>${name}</title><g transform="translate(${x} ${y})" class="pin ${current ? "selected" : ""}">
       ${current ? '<circle class="ping" r="20"/><circle class="halo" r="13"/>' : ""}
       <circle r="7"/><circle class="center" r="2"/>
-      <rect x="15" y="-12" width="67" height="24" rx="3"/>
-      <text x="48" y="4" text-anchor="middle">STN 0${i + 1}</text></g></a>`;
+      <g class="map-tag"><rect x="15" y="-12" width="67" height="24" rx="3"/>
+      <text x="48" y="4" text-anchor="middle">STN 0${i + 1}</text></g></g></a>`;
   }).join("");
   const track = stations.map(({ point }) => point.join(",")).join(" ");
   return `<svg class="survey-map" viewBox="0 0 800 360" aria-label="Bathymetric survey chart with three linked stations">
@@ -65,18 +65,20 @@ export function reading(station, tick) {
 export function temperatureTrace(station, tick) {
   const samples = Array.from({ length: 31 }, (_, i) => reading(station, tick - 30 + i).temperature);
   const points = samples.map((sample, i) => {
-    const y = 50 - (sample - station.temperature) * 108;
+    const y = 50 - (sample - station.temperature) * 100;
     return `${4 + i * 18},${y.toFixed(1)}`;
   });
   const lastY = points.at(-1).split(",")[1];
-  return `<svg class="trace" viewBox="0 0 550 100" preserveAspectRatio="none" role="img"
+  return `<div class="trace-frame"><svg class="trace" viewBox="0 0 550 100" preserveAspectRatio="none" role="img"
     aria-label="Simulated temperature over the past 60 seconds, now ${samples.at(-1).toFixed(2)} degrees Celsius">
     <defs><linearGradient id="wash" x2="0" y2="1"><stop stop-color="#469a8a" stop-opacity=".30"/>
     <stop offset="1" stop-color="#469a8a" stop-opacity=".02"/></linearGradient></defs>
     <path d="M0 10H550 M0 50H550 M0 90H550" fill="none" stroke="#c9d7d1" stroke-dasharray="3 5"/>
     <path d="M${points.join(" L")} V100 H4Z" fill="url(#wash)"/>
     <polyline points="${points.join(" ")}" fill="none" stroke="#217d70" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-    <circle cx="544" cy="${lastY}" r="4" fill="#217d70"/></svg>`;
+    <circle cx="544" cy="${lastY}" r="4" fill="#217d70"/></svg>
+    <div class="trace-scale" aria-hidden="true"><span>${(station.temperature + 0.4).toFixed(2)}°</span>
+    <span>${station.temperature.toFixed(2)}°</span><span>${(station.temperature - 0.4).toFixed(2)}°</span></div></div>`;
 }
 
 export function instrumentTree(code) {

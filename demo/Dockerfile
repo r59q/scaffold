@@ -25,7 +25,7 @@ COPY --from=build /app/backend/dist/ backend/dist/
 COPY --from=build /app/backend/node_modules/ backend/node_modules/
 COPY --from=build /app/browser/dist/ browser/dist/
 COPY --from=build /app/demo/node_modules/ demo/node_modules/
-COPY demo/index.html demo/server.mjs demo/
+COPY demo/index.html demo/atlas.css demo/atlas.js demo/server.mjs demo/charts.mjs demo/survey.mjs demo/
 
 USER node
 CMD ["node", "demo/server.mjs"]
