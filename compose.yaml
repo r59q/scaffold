@@ -5,11 +5,13 @@ services:
     build:
       context: .
       dockerfile: demo/Dockerfile
+    environment:
+      PORT: "8080"
     ports:
       - "127.0.0.1:8080:8080"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/').then(response => process.exit(response.ok ? 0 : 1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:' + process.env.PORT + '/').then(response => process.exit(response.ok ? 0 : 1))"]
       interval: 5s
       timeout: 3s
       retries: 5
