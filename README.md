@@ -48,14 +48,28 @@ string in OpenSSH `known_hosts` format, with one entry per line. Include a
 verified host key entry for `prod.hostname`. The workflow's Vault identity
 must have `read` access to `kv/data/shared`. The workflow verifies the server
 key against `prod.hostname` and connects to `prod.wg_ip` through WireGuard. The
-remote SSH user needs Docker access and a Compose version that supports
-`up --wait`.
+remote SSH user needs Docker access that permits creating networks and a
+Compose version that supports `up --wait`.
 
 The workflow builds the selected revision on the server under
-`$HOME/scaffold-demo` and updates `current` after the service passes its HTTP
-health check. The previous release files remain available. To verify the demo,
-check `docker compose ps` from `$HOME/scaffold-demo/current`, forward the
-server's loopback port 8080 over SSH, and run the browser smoke check above.
+`$HOME/scaffold-demo` and updates `current` after Compose reports the service
+healthy. The previous release files remain available.
+
+The deployment creates the shared Docker bridge network `proxy` if needed.
+`compose.production.yaml` attaches the demo to it with the DNS alias
+`scaffold-demo`. Compose treats `proxy` as external, so redeploys reuse the
+network and it remains available to Nginx Proxy Manager after `down`.
+
+In Nginx Proxy Manager, attach its `app` service to the same `proxy` network.
+Set the Proxy Host's scheme to `http`, forward hostname to `scaffold-demo`,
+and forward port to `8080`. Enable **Websockets Support** for `/blocks`.
+Open the proxy hostname and run the browser smoke check above.
+
+From `$HOME/scaffold-demo/current`, run
+`docker compose -f compose.yaml -f compose.production.yaml ps` to check health.
+Use the same file flags with `down` to stop the deployment. The server still
+publishes port 8080 on loopback, so you can also forward that port over SSH
+and run the same browser smoke check directly.
 
 ## TypeScript backend
 
