@@ -1,0 +1,10 @@
+services:
+  demo:
+    networks:
+      proxy:
+        aliases:
+          - scaffold-demo
+
+networks:
+  proxy:
+    external: true
