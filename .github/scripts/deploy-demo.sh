@@ -100,13 +100,17 @@ trap 'rm -rf -- "$release"' EXIT
 # Docker copies the source as root, and the demo runs as the node user.
 tar -x --same-permissions -C "$release"
 cd "$release"
-docker compose up --build --wait --wait-timeout 60
+if ! docker network inspect proxy > /dev/null 2>&1; then
+  docker network create --driver bridge proxy ||
+    docker network inspect proxy > /dev/null
+fi
+docker compose -f compose.yaml -f compose.production.yaml up --build --wait --wait-timeout 60
 ln -sfnT -- "$release" "$deploy_dir/current"
 trap - EXIT
 REMOTE
 )
 
-git archive HEAD -- .dockerignore compose.yaml backend browser demo |
+git archive HEAD -- .dockerignore compose.yaml compose.production.yaml backend browser demo |
   ssh -F /dev/null -T -i "$credentials/id_deploy" -l "$ssh_username" \
     -o BatchMode=yes -o ConnectTimeout=20 -o IdentitiesOnly=yes \
     -o StrictHostKeyChecking=yes -o "HostKeyAlias=$hostname" \
