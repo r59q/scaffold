@@ -97,7 +97,8 @@ deploy_dir="$HOME/scaffold-demo"
 mkdir -p -- "$deploy_dir"
 release=$(mktemp -d "$deploy_dir/release.XXXXXXXX")
 trap 'rm -rf -- "$release"' EXIT
-tar -x -C "$release"
+# Docker copies the source as root, and the demo runs as the node user.
+tar -x --same-permissions -C "$release"
 cd "$release"
 docker compose up --build --wait --wait-timeout 60
 ln -sfnT -- "$release" "$deploy_dir/current"
