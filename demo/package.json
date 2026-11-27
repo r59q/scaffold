@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@scaffold/backend": "file:../backend",
+    "d3-contour": "^4.0.3",
     "ws": "^8.18.3"
   }
 }
