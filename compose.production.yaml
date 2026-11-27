@@ -1,5 +1,9 @@
 services:
   demo:
+    environment:
+      PORT: "8535"
+    ports: !override
+      - "127.0.0.1:8535:8535"
     networks:
       proxy:
         aliases:
