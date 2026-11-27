@@ -13,20 +13,25 @@ npm --prefix demo ci
 npm --prefix demo start
 ```
 
-Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) in a browser. The demo
-serves the built browser modules and streams HTML from the backend builder over
-a WebSocket. Each visit starts a fresh sequence.
+Open [Pelagic Field Observatory](http://127.0.0.1:8080/) to explore a fictional
+North Atlantic survey. The backend streams the selected station's field notes,
+instruments, and simulated sensor readings to the browser renderer over
+`/blocks`. The D3 bathymetric basemap is a shared HTTP asset, so its contour
+geometry only needs to be downloaded once during a visit.
 
-To smoke-check the demo, open the browser's Network panel, then reload the page.
+1. Reload a station and open **Stream live** in the masthead. The inspector
+   shows the most recent block IDs, insertions or updates, and UTF-8 message
+   sizes. The two field-note paragraphs arrive separately and fade into place.
+2. Watch **Live telemetry** for a few seconds. The server sends new readings
+   every two seconds. The temperature trace covers the last minute, and the
+   same four telemetry IDs update in place. The instrument tree shows how the
+   station's relay connects to the four sensors.
+3. Select a numbered page or a station on the chart. Each station has a
+   shareable URL and starts its own stream. Use the browser's Back button to
+   return to the previous station.
 
-1. **First block** fades in on its own. In the Network panel, the `/blocks`
-   WebSocket shows an `intro` message.
-2. About two seconds later, **Second block** fades in below it. The same socket
-   shows a `details` message, and the page stays open without another document
-   request.
-3. About two seconds after that, the first heading changes to **First block
-   (revised)** without another fade. The socket shows a second `intro` message,
-   and the page still contains exactly two blocks with the second below the first.
+Run `npm --prefix demo test` to check page selection, incremental delivery,
+live updates, and stream cleanup.
 
 ### Run with Docker Compose
 

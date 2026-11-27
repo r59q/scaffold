@@ -3,54 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scaffold progressive loading demo</title>
-  <style>
-    body {
-      background: #f3f5fa;
-      color: #17213b;
-      font: 1rem/1.5 system-ui, sans-serif;
-      margin: 0;
-    }
-
-    main {
-      margin: 0 auto;
-      max-width: 40rem;
-      padding: 3rem 1rem;
-    }
-
-    #blocks {
-      display: grid;
-      gap: 1rem;
-    }
-
-    #blocks > div {
-      background: white;
-      border: 1px solid #cbd3e3;
-      border-radius: 0.75rem;
-      padding: 1.25rem;
-    }
-
-    h2, p {
-      margin: 0;
-    }
-
-    h2 + p {
-      margin-top: 0.25rem;
-    }
-  </style>
+  <meta name="theme-color" content="#f6f7f2">
+  <title>North Atlantic Survey · Pelagic</title>
+  <link rel="stylesheet" href="/atlas.css">
+  <script type="module" src="/atlas.js"></script>
 </head>
 <body>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="waves" viewBox="0 0 32 32"><path d="M3 11c6 0 6-7 13-7s7 7 13 7M3 18c6 0 6-7 13-7s7 7 13 7M3 25c6 0 6-7 13-7s7 7 13 7"/></symbol>
+    <symbol id="map-icon" viewBox="0 0 24 24"><path d="m2 6 6-3 8 3 6-3v15l-6 3-8-3-6 3zM8 3v15m8-12v15"/></symbol>
+    <symbol id="book-icon" viewBox="0 0 24 24"><path d="M5 3h14v18H5zM9 3v18m3-12h4m-4 4h4"/></symbol>
+    <symbol id="pulse-icon" viewBox="0 0 24 24"><path d="M1 13h5l3-8 5 14 3-9 2 3h4"/></symbol>
+    <symbol id="tree-icon" viewBox="0 0 24 24"><path d="M10 3h5v5h-5zM3 16h5v5H3zm14 0h5v5h-5zM12.5 8v4m-7 4v-4h14v4"/></symbol>
+  </svg>
+  <header class="masthead"><div class="mast-inner">
+    <a class="brand" href="/"><svg aria-hidden="true"><use href="#waves"/></svg>Pelagic</a>
+    <span class="division">Field observatory</span>
+    <details class="inspector">
+      <summary aria-label="Inspect the block stream"><span class="connection" id="connection" role="status">Connecting</span></summary>
+      <div class="inspector-panel">
+        <h2>Recent stream blocks</h2>
+        <table><thead><tr><th>Block ID</th><th>Action</th><th>Bytes</th></tr></thead><tbody id="frames"></tbody></table>
+        <a id="reload" href="" hidden>Reconnect to survey</a>
+      </div>
+    </details>
+  </div></header>
   <main>
-    <h1>Scaffold progressive loading</h1>
-    <div id="blocks" aria-live="polite"></div>
+    <noscript><p>Enable JavaScript to receive the survey stream.</p></noscript>
+    <div class="hero">
+      <div><div class="eyebrow expedition"><span></span>Expedition log <b>/</b> NA–024</div><div id="intro"></div></div>
+      <nav class="station-nav" aria-label="Survey station pages"><span class="eyebrow">Survey stations</span><div id="pages"></div></nav>
+    </div>
+    <div class="atlas-grid">
+      <section class="card map-card" aria-labelledby="map-title">
+        <header class="card-heading"><svg aria-hidden="true"><use href="#map-icon"/></svg><h2 id="map-title">Bathymetric chart</h2><span class="meta">WGS 84</span></header>
+        <div id="map"></div>
+        <div class="legend"><span><i class="active-key"></i>Selected station</span><span><i class="track-key"></i>Survey track</span><span class="contour-key"><i aria-hidden="true"></i>Depth contours</span></div>
+      </section>
+      <section class="card brief-card" aria-labelledby="brief-title">
+        <header class="card-heading"><svg aria-hidden="true"><use href="#book-icon"/></svg><h2 id="brief-title">Station brief</h2></header>
+        <div class="brief-body"><div id="brief"></div><div id="notes"></div></div>
+        <div class="terrain"><span class="eyebrow">Seafloor</span><div id="terrain"></div></div>
+      </section>
+      <section class="card" aria-labelledby="telemetry-title">
+        <header class="card-heading"><svg aria-hidden="true"><use href="#pulse-icon"/></svg><h2 id="telemetry-title">Live telemetry</h2><span class="meta"><i class="dot"></i>2 s interval</span></header>
+        <div id="metrics"></div>
+        <div class="plot-frame"><div id="plot"></div><div class="plot-axis"><span>Temperature · −60 s</span><span>Now</span></div></div>
+      </section>
+      <section class="card" aria-labelledby="network-title">
+        <header class="card-heading"><svg aria-hidden="true"><use href="#tree-icon"/></svg><h2 id="network-title">Instrument network</h2></header>
+        <div id="network"></div>
+        <div class="sample"><span class="eyebrow">Last sample</span><div id="sample"></div></div>
+      </section>
+    </div>
+    <footer><span class="stream-count"><i class="dot"></i>Scaffold stream <span id="counter">0 blocks</span></span><span>Simulated expedition data</span></footer>
+    <div id="incoming" hidden></div>
   </main>
-  <script type="module">
-    import { bindBlockStream, tweenEnter } from "/scaffold/index.js";
-
-    const url = new URL("/blocks", location.href);
-    url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(url);
-    bindBlockStream(document.querySelector("#blocks"), socket, tweenEnter);
-  </script>
 </body>
 </html>

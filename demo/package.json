@@ -6,10 +6,12 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "@scaffold/backend": "file:../backend",
+    "d3-contour": "^4.0.3",
     "ws": "^8.18.3"
   }
 }
