@@ -2,17 +2,21 @@ name: Deploy demo
 
 on:
   workflow_dispatch:
+  pull_request_target:
+    types: [closed]
+    branches: [master]
 
 permissions:
   contents: read
 
-concurrency:
-  group: deploy-demo-production
-  cancel-in-progress: false
-
 jobs:
   deploy:
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: >-
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true)
+    concurrency:
+      group: deploy-demo-production
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
