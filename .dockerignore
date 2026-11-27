@@ -10,3 +10,7 @@
 !demo/index.html
 !demo/package*.json
 !demo/server.mjs
+!demo/atlas.css
+!demo/atlas.js
+!demo/charts.mjs
+!demo/survey.mjs
